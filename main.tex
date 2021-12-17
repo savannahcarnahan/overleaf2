@@ -41,7 +41,7 @@
   
 \newpage
 
-\section{Background}
+\section{Introduction}
 
 \subsection{Motivation}
 
@@ -92,7 +92,7 @@ Once the simulation is complete, the mobility $\mathbf{\mu}$ is determined by av
 
 We propose to create a flexible tool to examine exciton diffusion in a variety of materials. The tool will initially only support materials in the hopping regime but would have the flexibility to extend to more complicated equations that describe the intermediate regime. The project will begin by examining point particles and will then expand to include more physical systems, such as atoms in a crystal lattice.
 
-\section{Software Architecture}
+\section{Design}
 
 The software will implement a factory design pattern so that it can be easily expanded to accommodate more methods and models. The general outline of the software is as follows:
 
@@ -106,7 +106,7 @@ The software will implement a factory design pattern so that it can be easily ex
 
 \begin{figure}
     \centering
-   \includegraphics[scale=.25]{uml.png}
+   \includegraphics[scale=.2]{uml.png}
     \caption{UML Diagram}
     \label{fig:my_label}
 \end{figure}
@@ -117,15 +117,61 @@ The software will implement a factory design pattern so that it can be easily ex
 
 The inputs for computing the coulombic coupling ($J_{Coul}$), which are the transition dipole moment or the transition charges for a particular excited state, will be obtained using the quantum chemistry package Gaussian 16. The input file with the position vectors of crystalline materials will be imported as .cif file format from Cambridge Crystallographic Data Centre (CCDC). Both of these files are text files, and thus they can be processed using existing packages. From these files and command line inputs, the system and desired model will be determined. As a second option, the user can input a text file with the line "Ising <model name>" or "<model name>", and the program will run a default program.
 
-\subsection{Model}
 
-For evaluating the kinetics of exciton transport in materials, we will examine site hopping models in the adiabatic and nonadiabatic limits. In the non-adiabatic limit, the rate equation is the Marcus rate equation; in the adiabatic limit, the Arrhenius rate equation. These will both be concrete classes of the abstract class Model, which will include a generic rate equation. Additionally, a method for calculating the diffusion distance is included in the abstract class. Both of these models will use the kineticMonteCarlo method to propagate the exciton through space.
+\subsection{Factories}
+
+\subsubsection{Site Factory}
+
+\subsubsection{System Factory}
+
+\subsubsection{Model Factory}
+
+\subsubsection{Probability Rule Factory}
+
+
+
+
+\subsection{Primary Algorithm}
+
+
+
+
+\subsection{Sites}
+
+\subsubsection{Atom and PointParticle}
+
+\subsubsection{Molecule}
 
 \subsection{System}
 
 Any instance of the abstract System class will be an aggregate class of some type of site. The simplest system, the Ising model, is an aggregate of point particles. The other current system is the crystal, which is composed of atoms. These sites all have position, and the aggregate classes keep track of which particles are close to each other. Additionally, the abstract System class will contain a method to excite sites randomly based on either charge density or a random selection process (depending on the presence of single or multiple excitons).
 
+\subsubsection{System Attributes}
+\subsubsection{System Methods}
+
+\subsection{Model}
+
+For evaluating the kinetics of exciton transport in materials, we will examine site hopping models in the adiabatic and nonadiabatic limits. In the non-adiabatic limit, the rate equation is the Marcus rate equation; in the adiabatic limit, the Arrhenius rate equation. These will both be concrete classes of the abstract class Model, which will include a generic rate equation. Additionally, a method for calculating the diffusion distance is included in the abstract class. Both of these models will use the kineticMonteCarlo method to propagate the exciton through space.
+
+\subsubsection{Methods}
+
+\subsection{Probability Rules}
+
+\subsubsection{Hamiltonian}
+
+
+
+\subsubsection{Types of Rules}
+
+
 \subsection{Output}
+
+\subsubsection{Text}
+
+\subsubsection{Graphs}
+
+\subsubsection{Animation}
+
 
 \begin{figure}
     \centering
@@ -134,25 +180,32 @@ Any instance of the abstract System class will be an aggregate class of some typ
     \label{fig:my_label}
 \end{figure}
 
-We plan to represent one of our results for our energy migration in materials in the following manner. Figure 2a represents an example of a benzene crystal with the crystalline axis abc. The centroids of each benzene sub-unit will be converted to a simplified ball model (Figure 2b). All the sub-units which are not involved in the energy migration will be removed from the final representation (Figure 2c). The sub-units which take part in the exciton transport will additionally be color coded according to their position vectors from the origin to visualize the depth of the system. 
+\section{Development Process}
+
+\subsection{Planned Workflow}
+
+\subsection{Continuous Integration Testing}
+
+\subsection{Workflow Hiccups}
+
+\subsection{Design Mistakes and Fixes}
 
 
-\section{Estimated Timeline}
+
+\section{Profiling}
+
+\subsection{Results}
+
+\subsection{Improvements}
 
 
-31 Oct: Update the preliminary design from the suggestions received from class. Agree on GitHub workflow
 
-3 Nov: Implement a working Monte Carlo simulation for simple atomic model
 
-14 Nov: Updated model to include advanced materials and kinetic models
+\section{Future Improvements}
 
-21 Nov: Integration of visualization capabilities
 
-22-23 Nov: Check in with the AI
 
-30 Nov: Working alpha version
 
-13 Dec: Project completion
 
 \printbibliography
 
