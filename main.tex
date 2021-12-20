@@ -131,18 +131,28 @@ The software will implement a factory design pattern so that it can be easily ex
 
 \subsection{Input}
 
-
+The required output of the Input suite is a System object, a start time, and an end time. The suite includes capabilities to take input interactively or from the command line. The desired input is a text file of the format described in the README file. This file is processed by the inputprocessor module to generate a site list and a list of keywords for the factories. The system is then created with the System Factory. There is also a module that processes crystallographic data into the desired output.
 
 
 \subsection{Factories}
 
+The factory modules allow different implementations of abstract base classes to be created depending on keywords in the input file.
+
 \subsubsection{Site Factory}
+
+The site factory creates Sites, either Molecule, Atom, or PointParticle. It must have keyword input and coordinates. Creating a Molecule object also requires multiple atoms with different coordinates to be processed into ASE atom objects prior to calling the factory method.
 
 \subsubsection{System Factory}
 
+System Factory creates a System object, taking arguments of a system keyword, a model keyword, a probability rule keyword, dimensionality, and optionally a temperature. The System Factory uses Model Factory and Probability Rule Factory to create their respective objects with their respective keywords and calls the appropriate constructor based on the system keyword.
+
 \subsubsection{Model Factory}
 
+Model Factory creates the appropriate Model object given a keyword.
+
 \subsubsection{Probability Rule Factory}
+
+Probabilty Rule Factory creates the appropriate Probability Rule object given a keyword.
 
 
 
@@ -154,9 +164,11 @@ The software will implement a factory design pattern so that it can be easily ex
 
 \subsection{Sites}
 
-A site's most important attribute is the boolean value excited, which returns true if the site is excited and false otherwise. It also contains several attributes that aid in the calculation of probability rules. Every site 
+A site's most important attribute is the boolean value excited, which returns true if the site is excited and false otherwise. It also contains several attributes that aid in the calculation of probability rules. Every site also has a get\_position() method that returns a numpy array of coordinates.
 
 \subsubsection{Atom and PointParticle}
+
+
 
 \subsubsection{Molecule}
 
@@ -166,9 +178,11 @@ Any instance of the abstract System class will be an aggregate class of sites. T
 
 \subsubsection{System Attributes}
 
-The two most important System attributes are model, which corresponds to a Model object, and rate, which corresponds to a Probability Rule object. Both of these objects are utilized 
+The three most important System attributes are model, which corresponds to a Model object, rate, which corresponds to a Probability Rule object, and site list, which is a list of sites. Additionally, System has a temperature attribute T and a list of current excited sites. The latter attribute allows methods that need to know the excited sites list to run much faster.
 
 \subsubsection{System Methods}
+
+
 
 \subsection{Model}
 
