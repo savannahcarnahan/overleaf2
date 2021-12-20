@@ -1,7 +1,13 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
+\setlength{\oddsidemargin}{-0.2in}
+\setlength{\evensidemargin}{0.2in}
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{9.5in}
+\setlength{\topmargin}{-0.75in}
 \usepackage{authblk}
 \usepackage{amsmath}
+ \usepackage{todonotes}
 \usepackage{graphicx}
  \usepackage{setspace}
 \doublespacing
@@ -41,6 +47,9 @@
   
 \newpage
 
+\tableofcontents %Added this
+
+
 \section{Introduction}
 
 \subsection{Motivation}
@@ -49,7 +58,7 @@ Designing, predicting and understanding energy transport in opto-electronic devi
 
 There are two well-established methods for modelling exciton transport.\cite{Oberhofer2017ChargeMethods} In the hopping regime, the particle is viewed as discretely localized on a site in the material. The exciton can then jump from one site to another with a probability depending on the system in question. This approach is best suited to highly disordered materials due to Andersen delocalisation and polaron formation.\cite{DanielBalzer2021DelocalisedMaterials}
 
-In highly ordered materials, the exciton is best modelled as a wave because in these materials the exciton can exist delocalized over several sites.\cite{Oberhofer2017ChargeMethods} It is therefore inaccurate to model the exciton dispersion as existing on discrete sites, and thus, the mobility of the exciton in the material is instead modelled using the velocity of the wavepacket. These two models are quite successful at modelling transports at the extremes; however, many modern materials are in an intermediate zone that is not well described by either model. There are several models that aim to bridge the gap between the models, called the intermediate regime. Our software will primarily focus on modelling the hopping regime, with the goal of having the flexibility to accommodate further advances in models in the field.
+In highly ordered materials, the exciton is best modelled as a wave because in these materials the exciton can exist delocalized over several sites.\cite{Oberhofer2017ChargeMethods} It is therefore inaccurate to model the exciton dispersion as existing on discrete sites, and thus, the mobility of the exciton in the material is instead modelled using the velocity of the wavepacket. These two models are quite successful at modelling transports at the extremes; however, many modern materials are in an intermediate zone that is not well described by either model. There are several models that aim to bridge the gap between the models, called the intermediate regime. Our software will primarily focus on modelling the hopping regime, with the goal of having the flexibility to accommodate further advances in models in the field, particularly complications that arise in the intermediate regime.
 
 \subsection{Theory}
 
@@ -68,8 +77,15 @@ In the hopping regime, the probability that an exciton will transfer from site 1
 where $\hbar$ and $k_b$ are constants, $\lambda$ is the reorganization free energy, $J_{Coul}$ is the coupling between the initial site and final site, $\Delta G^0$ is the driving force, and $T$ is the temperature. In the adiabatic limit, this is defined by the Arrhenius equation:\cite{Baumeier2012StochasticNetworks}
 
 \begin{align}
-    k_{12,adiab}=&\mu_{eff}e^{-\beta(\Delta G^{\ddag}-\Delta^\ddag}
+    k_{12,adiab}=&\mu_{eff}e^{-\beta(\Delta G^{\ddag}-\Delta^\ddag)}
 \end{align}
+
+A yet another widely used formula to calculate the rate, in the context of Förster resonance energy transfer (FRET) is as follows:-
+
+\begin{align}
+    k_{12,FRET}=&\frac{2\pi}{\hbar}\frac{1}{(4\pi\epsilon_0)^2} \frac{\kappa^2|\mu_1|^2|\mu_2|^2}{r^6}Q_DSpectralOverlap
+\end{align}
+Where $\kappa$ is the orientation factor, $\mu_1$ and $\mu_2$ are the transition dipoles on site 1 and 2, respectively, r is the distance between the chromophores, and \textit{SpectralOverlap} is the overlap between absorption and emission spectra of site2 and site1, respectively. 
 
 Therefore the movement of the exciton through the material can be modelled using the kinetic Monte Carlo (kMC) method.\cite{Oberhofer2017ChargeMethods} Beginning at $t=0$, the algorithm is propagated with a chosen time step. The probability that a charge localized at site 1 will jump to one of $i$ sites it is connected to is governed by the summation of the transition rates:
 \begin{align}
@@ -106,7 +122,7 @@ The software will implement a factory design pattern so that it can be easily ex
 
 \begin{figure}
     \centering
-   \includegraphics[scale=.2]{uml.png}
+   \includegraphics[scale=0.4]{UML_2.png}
     \caption{UML Diagram}
     \label{fig:my_label}
 \end{figure}
@@ -115,7 +131,7 @@ The software will implement a factory design pattern so that it can be easily ex
 
 \subsection{Input}
 
-The inputs for computing the coulombic coupling ($J_{Coul}$), which are the transition dipole moment or the transition charges for a particular excited state, will be obtained using the quantum chemistry package Gaussian 16. The input file with the position vectors of crystalline materials will be imported as .cif file format from Cambridge Crystallographic Data Centre (CCDC). Both of these files are text files, and thus they can be processed using existing packages. From these files and command line inputs, the system and desired model will be determined. As a second option, the user can input a text file with the line "Ising <model name>" or "<model name>", and the program will run a default program.
+
 
 
 \subsection{Factories}
@@ -138,39 +154,61 @@ The inputs for computing the coulombic coupling ($J_{Coul}$), which are the tran
 
 \subsection{Sites}
 
+A site's most important attribute is the boolean value excited, which returns true if the site is excited and false otherwise. It also contains several attributes that aid in the calculation of probability rules. Every site 
+
 \subsubsection{Atom and PointParticle}
 
 \subsubsection{Molecule}
 
 \subsection{System}
 
-Any instance of the abstract System class will be an aggregate class of some type of site. The simplest system, the Ising model, is an aggregate of point particles. The other current system is the crystal, which is composed of atoms. These sites all have position, and the aggregate classes keep track of which particles are close to each other. Additionally, the abstract System class will contain a method to excite sites randomly based on either charge density or a random selection process (depending on the presence of single or multiple excitons).
+Any instance of the abstract System class will be an aggregate class of sites. These sites all have position, and the aggregate classes keep track of which particles are close to each other. Additionally, the abstract System class will contain a method to excite sites randomly based on either charge density or a random selection process (depending on the presence of single or multiple excitons). Currently, implemented sub-classes are Static and Crystal, both of which are characterized by non-moving sites. A future subclass is Dynamic, which would be 
 
 \subsubsection{System Attributes}
+
+The two most important System attributes are model, which corresponds to a Model object, and rate, which corresponds to a Probability Rule object. Both of these objects are utilized 
+
 \subsubsection{System Methods}
 
 \subsection{Model}
 
-For evaluating the kinetics of exciton transport in materials, we will examine site hopping models in the adiabatic and nonadiabatic limits. In the non-adiabatic limit, the rate equation is the Marcus rate equation; in the adiabatic limit, the Arrhenius rate equation. These will both be concrete classes of the abstract class Model, which will include a generic rate equation. Additionally, a method for calculating the diffusion distance is included in the abstract class. Both of these models will use the kineticMonteCarlo method to propagate the exciton through space.
+The model is an abstract base class for objects responsible for advancing the system forward by one step. It is also responsible for selecting the next site given a list of sites and rates. It also calculates how much time the step takes given two sites and a system. The time step method returns a change in time.
 
-\subsubsection{Methods}
+\subsubsection{Subclasses}
+
+Currently, the only model implemented is the kinetic Monte Carlo. It selects the next site by adding up the rates of possible transfer sites, choosing a random number between 0 and the sum, and selecting the next site based on where that number falls. Essentially, if the rate of transfer corresponds to $k_{1b}$, where $b$ is an index representing the number of the possible transfer sites, if the random number falls between 0 and $k_{12}$, site 2 is selected, if it is between $k_{12}$ and $k_{12}+k_{13}$, site 3 is selected, etc. Once a site A is selected, the time advancement is determined by a random number from an exponential distribution based on the rate $k_{1A}$.
 
 \subsection{Probability Rules}
 
+Probability rules are responsible for returning coupling rates based on the system under examination and two site objects. The transition probability method returns a float representing the numerator of a probability. 
+
+
+
 \subsubsection{Hamiltonian}
+
+The Hamiltonian method is used by all the probability rules. Its calculation does not change based on the probability rule, and therefore lives in the abstract base class.
 
 
 
 \subsubsection{Types of Rules}
 
+The subclasses FRET, Arrhenius, and Marcus run these calculations based on equations 2, 3, and 4 respectively. The Uniform subclass just returns 1, corresponding to a uniform probability distribution when normalized.
+
 
 \subsection{Output}
+Apart from providing on-screen real time text output of progress as the exciton propagates through the system, our libraries currently support three forms of output: Text, Graphs and Animation.
 
 \subsubsection{Text}
-
+Data encoding the excited states over time can be saved in the form of a CSV file. This allows for the data to be saved and processed later on without re-running the entire simulation.
 \subsubsection{Graphs}
+Built-in functions also enable the creation of:
 
+\begin{enumerate}
+    \item 3D-plots of any system state, given the appropriate parameters, with the excitons marked in the plot by a different color. 
+    \item 2D-plots of the propagation of the diffusion distance with time. This information carries theoretical value in understanding the behavior of the model in terms of its parameters.
+\end{enumerate}
 \subsubsection{Animation}
+3D-animations of the exciton propagation through the system can also be created. These animations follow a similar pattern to the 3D-plots of the system, with the entire system being recreated and the excitons at any one time being marked with a different color. These animations can be played in real-time and/or saved at a directory of choice for later viewing. \todo{Insert an animation picture here}
 
 
 \begin{figure}
