@@ -10,6 +10,7 @@
  \usepackage{todonotes}
 \usepackage{graphicx}
  \usepackage{setspace}
+ \usepackage{float}
 \doublespacing
 \usepackage[style=numeric]{biblatex}
   
@@ -97,16 +98,22 @@ A random number between $0$ and $K_{12}$ is chosen as the probability $p$, and t
     p_{12}(t)=k_{12}e^{k_{12}t}
 \end{align}
 Once the exciton is transferred, the process is repeated for a predetermined number of steps or until a total simulation time $\tau$ is reached. 
-Once the simulation is complete, the mobility $\mathbf{\mu}$ is determined by averaging over the kMC trajectories.
+Once the simulation is complete, the mobility $\mathbf{\mu}$ is determined by averaging over the kMC trajectories or taking the length of the longest trajectory.
 \begin{align}
     \mathbf{\mu}=&\frac{\langle \mathbf{v}\rangle}{\mathbf{E}}\\
     \langle\mathbf{v}\rangle=&\frac{\mathbf{R}_{final}-\mathbf{R}_{initial}}{\tau}
 \end{align}
 
+\begin{figure}[H]
+    \centering
+  \includegraphics[scale=.35]{out2.png}
+    \caption{Exciton transport visualization}
+    \label{fig:my_label}
+\end{figure}
 
 \subsection{Proposed Project}
 
-We propose to create a flexible tool to examine exciton diffusion in a variety of materials. The tool will initially only support materials in the hopping regime but would have the flexibility to extend to more complicated equations that describe the intermediate regime. The project will begin by examining point particles and will then expand to include more physical systems, such as atoms in a crystal lattice.
+We propose to create a flexible tool to examine exciton diffusion in a variety of materials. The tool will initially only support materials in the hopping regime but would have the flexibility to extend to more complicated equations that describe the intermediate regime. The project began by examining point particles and expanded to include more physical systems, such as molecules in a lattice.
 
 \section{Design}
 
@@ -157,20 +164,19 @@ Probabilty Rule Factory creates the appropriate Probability Rule object given a 
 
 
 
-\subsection{Primary Algorithm}
-
-
-
-
 \subsection{Sites}
 
 A site's most important attribute is the boolean value excited, which returns true if the site is excited and false otherwise. It also contains several attributes that aid in the calculation of probability rules. Every site also has a get\_position() method that returns a numpy array of coordinates.
 
 \subsubsection{Atom and PointParticle}
 
+Atom and PointParticle are both located at a specific position. Therefore, their get\_position method is straightforward. Atom wraps an Atom object from the ase module to facilitate DFT extensions.
+
 
 
 \subsubsection{Molecule}
+
+Molecule is slightly more complicated because it consists of several atoms located at different points. It wraps an Atoms object from the ase module, again for easy integration of DFT. Its position is defined as the average of the positions of its atoms.
 
 \subsection{System}
 
@@ -181,14 +187,14 @@ Any instance of the abstract System class will be an aggregate class of sites. T
 The three most important System attributes are model, which corresponds to a Model object, rate, which corresponds to a Probability Rule object, and site list, which is a list of sites. Additionally, System has a temperature attribute T and a list of current excited sites. The latter attribute allows methods that need to know the excited sites list to run much faster.
 
 \subsubsection{System Methods}
-
+Apart from methods which return system attributes, the system module has methods to transfer excitation by implementing smaller methods which can excite and unexcite sites. Moreover, the system module has a method to return all possible hopping sites from any of its sites, and has a number of methods which combine to find the nearest neighbors of a site by performing comparisons in parallel.
 
 
 \subsection{Model}
 
 The model is an abstract base class for objects responsible for advancing the system forward by one step. It is also responsible for selecting the next site given a list of sites and rates. It also calculates how much time the step takes given two sites and a system. The time step method returns a change in time.
 
-\subsubsection{Subclasses}
+\subsubsection{KMC}
 
 Currently, the only model implemented is the kinetic Monte Carlo. It selects the next site by adding up the rates of possible transfer sites, choosing a random number between 0 and the sum, and selecting the next site based on where that number falls. Essentially, if the rate of transfer corresponds to $k_{1b}$, where $b$ is an index representing the number of the possible transfer sites, if the random number falls between 0 and $k_{12}$, site 2 is selected, if it is between $k_{12}$ and $k_{12}+k_{13}$, site 3 is selected, etc. Once a site A is selected, the time advancement is determined by a random number from an exponential distribution based on the rate $k_{1A}$.
 
@@ -213,7 +219,7 @@ The subclasses FRET, Arrhenius, and Marcus run these calculations based on equat
 Apart from providing on-screen real time text output of progress as the exciton propagates through the system, our libraries currently support three forms of output: Text, Graphs and Animation.
 
 \subsubsection{Text}
-Data encoding the excited states over time can be saved in the form of a CSV file. This allows for the data to be saved and processed later on without re-running the entire simulation.
+Data encoding the excited states over time can be saved in the form of a CSV file. This allows for the data to be saved and processed later on without re-running the entire simulation. Both the data for excited states and the data for diffusion supports this form of output.
 \subsubsection{Graphs}
 Built-in functions also enable the creation of:
 
@@ -222,38 +228,103 @@ Built-in functions also enable the creation of:
     \item 2D-plots of the propagation of the diffusion distance with time. This information carries theoretical value in understanding the behavior of the model in terms of its parameters.
 \end{enumerate}
 \subsubsection{Animation}
-3D-animations of the exciton propagation through the system can also be created. These animations follow a similar pattern to the 3D-plots of the system, with the entire system being recreated and the excitons at any one time being marked with a different color. These animations can be played in real-time and/or saved at a directory of choice for later viewing. \todo{Insert an animation picture here}
+3D-animations of the exciton propagation through the system can also be created. These animations follow a similar pattern to the 3D-plots of the system, with the entire system being recreated and the excitons at any one time being marked with a different color. These animations can be played in real-time and/or saved at a directory of choice for later viewing.
 
-
-\begin{figure}
+\begin{figure}[H]
     \centering
-   \includegraphics[scale=.35]{out2.png}
-    \caption{Exciton transport visualization}
-    \label{fig:my_label}
+    \includegraphics[width=1.0\textwidth]{anim_pic.png}
+    \caption{A snapshot of a typical animation, where the red dot specifying the excited site can be seen to move around. Multiple excited sites are also supported. This particular structure has been taken from a benzene crystal.}
+    \label{fig:anim_pic}
 \end{figure}
 
 \section{Development Process}
 
 \subsection{Planned Workflow}
+The planned workflow is illustrated in Figure 4. Feature branches were to be branched off main and merged into development using a pull request. Once the new code was tested, the changes would be merged into main.
+
+\begin{figure}[H]
+    \centering
+   \includegraphics[scale=.5]{git_workflow.png}
+    \caption{GitHub branching scheme}
+    \label{fig:my_label}
+\end{figure}
 
 \subsection{Continuous Integration Testing}
 
-\subsection{Workflow Hiccups}
+Continuous integration testing was implemented with Github actions. On every push, the code was compiled on MacOS and Ubuntu systems using Python 3.7-3.8 and Python 3.6-3.8, respectively. The code was checked for compilation and conventions using flake8 and tested using pytest and the testing suite in the tests folder.
 
 \subsection{Design Mistakes and Fixes}
+
+Initially, the input processing, time step progression, and output processing were all contained in a single driver file. This created problems when, for instance, some group members primarily used terminals without easy access to the back end required for the animations. Therefore, even though the program was running fine, there was no way to avoid the animation output module. Additionally, there was no easy way to avoid the interactive method of getting the file name, which when running the code many times, as in testing, was very inconvenient
+
+This was solved by creating several input processing modules to process input interactively or through command line arguments, modules to run the simulation itself, and several options for output, including text output that does not depend on matplotlib. This also allowed for the relatively easy implementation of drivers that average over several simulations or take the longest trajectory from several simulations.
+
+Furthermore, since relating the sites to each other seemed to primarily be the role of system, the process of selecting the next site in the simulation was initially agnostic of the model (in no small part because System objects initially did not have a Model object attribute). Therefore, the site selection was overly coupled to the specific model we worked on, that is, the kinetic Monte Carlo. The solution to the over-coupling was adding a model attribute to system and a select site method to Model and KMC. 
+
+\subsection{Workflow Hiccups}
+
+The above design fixes were implemented rather late in the process. Therefore, there were several large fixes to implement, many of which involved system.py. We therefore made the choose to divide the changes even though we knew there would be a merge conflict later on, based on the assumption that it would still be faster to work in parallel. This proved to be a misguided assumption. Getting lists of objects to properly pass and stay the same proved difficult when decoupling the main code from the output suite. Additionally, the pull requests in Github automatically compare with main, which led to several commits merging into main before merging into development. Fortunately, this did not cause any major issues other than deviations from the main workflow.
+
+
 
 
 
 \section{Profiling}
+Profiling was performed  initially through \textbf{cProfile} and was later done manually to incorporate performance improvements made through Numba. Because the code is probabilistic, either averages over large numbers of iteerations or a fixed seed was utilized to recreate the same conditions and encourage a fair runtime tests. 
 
-\subsection{Results}
+\vspace{.15in}
+Although our simulation ran quickly for smaller numbers of particles, timing tests revealed that the runtime scaled rather poorly with the number of particles. It should be noted that the rate type and site type did not affect runtimes significantly; this is expected because the major resource-heavy computations were still performed regardless of the type of rate or site. 
 
-\subsection{Improvements}
+\vspace{.15in}
+The major code inefficiencies detected are provided in the first subsection below, followed by the improvements and then runtime statistics that quantify the improvements numerically. 
 
 
+\subsection{Code Bottlenecks}
+Timing tests revealed three major bottlenecks in the code, which are as follows:
+\begin{enumerate}
+    \item \textit{ Finding neighbors and excited sites in a System Abstract Class:} Initially, we would iterate through the entire list of sites in order to find the excited sites and the nearest neighbor. This computation is not only unnecessarily expensive, but is also performed at every timestep. 
+    \item \textit{Re-initializing the random number generator in  our model:} Our model object implemented a new random number generator with each timestep. Although this is a minor oversight, the creation of a new random number object requires a large overhead and thus this was significantly slowing down our code.
+    \item \textit{Numpy computations in calculating the rate:} Rate calculations requires a large number of Numpy computations and because they were calculated every timestep, they constituted a large amount of the runtime. 
+\end{enumerate}
+
+
+
+\subsection{Code Improvements}
+Each bottleneck was addressed separately and optimized in its own way. The optimizations for each are as follows:
+\begin{enumerate}
+    \item \textit{Finding neighbors and excited sites in a System Abstract Class:} The entire class was reimplemented to facilitate finding neighbors and excited sites. In fact, a list of excited sites is now maintained as an attribute to enable constant access times to these sites. The operation of finding neighbors is now performed in parallel through large Numpy arrays - this computation turns out to be much faster thanks to modern GPUs. Moreover, the set of nearest neighbors found for each site is cached within a dictionary (another new attribute introduced to the system class) to skip any repeated computation.
+    \item \textit{Re-initializing the random number generator in  our model:} A simple fix was to initialize the random number generator as an attribute of the model so that it is not initialized at every timestep.
+    \item \textit{Numpy computations in calculating the rate:} Rate calculations were broken down to a series of smaller computations which could be isolated and sped up via Numba. Because these Numpy operations are repeatedly performed at every timestep, the scenario is more or less an ideal one for using Numba.
+\end{enumerate}
+
+\subsection{Profiling Runtimes and Statistics}
+Table \ref{tab:prof} below summarizes typical runtimes that were observed for different numbers of site $N$. 
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l | l | l}
+N & Code Runtime (s) & Optimized Code Runtime (s) \\
+\hline
+10 & 12.04 & 19.7 \\
+100 & 16.55 & 24.05 \\
+1000 & 48.17 & 122.67 \\
+\end{tabular}
+\caption{Sample Execution times before and after profiling. A constant Marcus rate and Kinetic Monte Carlo Model with Point-Particles were used for this dataset.}
+\label{tab:prof}
+\end{table}
+
+Although a larger dataset was generated, often with different endtimes, the following trends seen in the above table were consistent: 
+\begin{enumerate}
+    \item Runtimes for optimized code were smaller than those for unoptimized code. The difference between the two would increase significantly for larger numbers of site $N$.
+    \item There would be a two to threefold increase in runtimes between $N = 100$ and $N = 1000$ for the optimized code, as opposed to a four to five-fold increase in runtimes for the unoptimized code.
+\end{enumerate}
+
+Because the computations performed are complicated, it is not simple to find a law for how the runtime should scale with $N$. If such a rule could be found, it would provide a theoretical model to verify our results against. Regardless, it is clear that profiling did significantly improve execution times in our project.
 
 
 \section{Future Improvements}
+
+To fully realize the potential of this code, it would be necessary to assign physically "real" constants in the Atom and Molecule classes. The ase module that these two classes wrap allows for access to DFT calculators like NWChem which can calculate several of these quantities (although with significant computational cost). Additionally, implementing code to allow for multiple excitons in a material is a must for exploring materials in the intermediate regime. Furthermore, adding more input processors to allow for input files coming from more established programs like Gaussian or QChem would decrease the barrier to entry for the code. Creating a GUI would also allow for a smoother user experience.
 
 
 
