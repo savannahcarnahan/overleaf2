@@ -12,7 +12,7 @@
  \usepackage{setspace}
  \usepackage{float}
 \doublespacing
-\usepackage[style=numeric]{biblatex}
+\usepackage[style=numeric,backend=bibtex]{biblatex}
   
 
 \addbibresource{references.bib}
@@ -325,7 +325,6 @@ Because the computations performed are complicated, it is not simple to find a l
 \section{Future Improvements}
 
 To fully realize the potential of this code, it would be necessary to assign physically "real" constants in the Atom and Molecule classes. The ase module that these two classes wrap allows for access to DFT calculators like NWChem which can calculate several of these quantities (although with significant computational cost). Additionally, implementing code to allow for multiple excitons in a material is a must for exploring materials in the intermediate regime. Furthermore, adding more input processors to allow for input files coming from more established programs like Gaussian or QChem would decrease the barrier to entry for the code. Creating a GUI would also allow for a smoother user experience.
-
 
 
 
