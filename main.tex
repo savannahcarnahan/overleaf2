@@ -86,7 +86,7 @@ A yet another widely used formula to calculate the rate, in the context of Förs
 \begin{align}
     k_{12,FRET}=&\frac{2\pi}{\hbar}\frac{1}{(4\pi\epsilon_0)^2} \frac{\kappa^2|\mu_1|^2|\mu_2|^2}{r^6}Q_DSpectralOverlap
 \end{align}
-Where $\kappa$ is the orientation factor, $\mu_1$ and $\mu_2$ are the transition dipoles on site 1 and 2, respectively, r is the distance between the chromophores, and \textit{SpectralOverlap} is the overlap between absorption and emission spectra of site2 and site1, respectively. 
+Where $\kappa$ is the orientation factor, $\mu_1$ and $\mu_2$ are the transition dipoles on site 1 and 2, respectively, r is the distance between the chromophores, and \textit{SpectralOverlap} is the overlap between absorption and emission spectra of site-2 and site-1, respectively. 
 
 Therefore the movement of the exciton through the material can be modelled using the kinetic Monte Carlo (kMC) method.\cite{Oberhofer2017ChargeMethods} Beginning at $t=0$, the algorithm is propagated with a chosen time step. The probability that a charge localized at site 1 will jump to one of $i$ sites it is connected to is governed by the summation of the transition rates:
 \begin{align}
@@ -124,12 +124,12 @@ The software will implement a factory design pattern so that it can be easily ex
     \item According to the input of model and system, the ModelFactory and the SystemFactory initialize a model and a system, respectively.
     \item The System excites molecules according to a prescribed method.
     \item The Model is run on the system to calculate the diffusion distance of the exciton for a given period.
-    \item The Model output is shown in the form of a graphical representation of the exciton path (or the longest exciton path) of the system.
+    \item The Model output is shown, usually in the form of a graphical representation of the exciton path (or the longest exciton path) of the system.
 \end{itemize}
 
 \begin{figure}
     \centering
-   \includegraphics[scale=0.4]{UML_2.png}
+   \includegraphics[scale=0.5]{UML_2.png}
     \caption{UML Diagram}
     \label{fig:my_label}
 \end{figure}
@@ -147,7 +147,7 @@ The factory modules allow different implementations of abstract base classes to 
 
 \subsubsection{Site Factory}
 
-The site factory creates Sites, either Molecule, Atom, or PointParticle. It must have keyword input and coordinates. Creating a Molecule object also requires multiple atoms with different coordinates to be processed into ASE atom objects prior to calling the factory method.
+The site factory creates Sites, which are either Molecule, Atom, or PointParticle. It must have keyword input and coordinates. Creating a Molecule object also requires multiple atoms with different coordinates to be processed into ASE atom objects prior to calling the factory method.
 
 \subsubsection{System Factory}
 
@@ -155,11 +155,11 @@ System Factory creates a System object, taking arguments of a system keyword, a 
 
 \subsubsection{Model Factory}
 
-Model Factory creates the appropriate Model object given a keyword.
+Model Factory creates the appropriate Model object given a keyword. The most commonly used model, and the one we implement, is the Kinetic Monte Carlo Model.
 
 \subsubsection{Probability Rule Factory}
 
-Probabilty Rule Factory creates the appropriate Probability Rule object given a keyword.
+Probability Rule Factory creates the appropriate Probability Rule object given a keyword. Various probability rules are supported on our infrastructure, which are explained later on.
 
 
 
@@ -212,7 +212,7 @@ The Hamiltonian method is used by all the probability rules. Its calculation doe
 
 \subsubsection{Types of Rules}
 
-The subclasses FRET, Arrhenius, and Marcus run these calculations based on equations 2, 3, and 4 respectively. The Uniform subclass just returns 1, corresponding to a uniform probability distribution when normalized.
+The subclasses FRET, Arrhenius, and Marcus run these calculations based on equations 2, 3, and 4 respectively. The Uniform subclass just returns 1, corresponding to a uniform probability distribution when normalized - this subclass is used primarily for testing.
 
 
 \subsection{Output}
